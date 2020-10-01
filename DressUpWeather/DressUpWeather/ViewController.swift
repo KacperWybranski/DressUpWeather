@@ -8,8 +8,9 @@
 import UIKit
 import AVKit
 import Vision
+import CoreLocation
 
-class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate, CLLocationManagerDelegate {
     @IBOutlet weak var degreeLbl: UILabel!
     @IBOutlet weak var descriptLbl: UILabel!
     var temperature: Int? = nil {
@@ -31,13 +32,16 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             setupBackground(weatherDsc: weatherDescription)
         }
     }
+    var locationManager: CLLocationManager?
+    var currentLocation: CLLocation?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCamera()
+        setupLocation()
         weatherDescription = nil
         temperature = nil
-        loadWeather()
+//        loadWeather()
     }
     
     func setupCamera() {
@@ -89,8 +93,10 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             
     }
     
-    func loadWeather() {
-        guard let url = URL(string: "http://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid=e4aefc24741504690052445e9b81243d") else { return }
+    func loadWeather(at coords: CLLocationCoordinate2D) {
+        let latitudeString = String(coords.latitude)
+        let longitudeString = String(coords.longitude)
+        guard let url = URL(string: "http://api.openweathermap.org/data/2.5/weather?lat=\(latitudeString)&lon=\(longitudeString)&appid=e4aefc24741504690052445e9b81243d") else { return }
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let data = data, error == nil {
                 do {
@@ -110,7 +116,21 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         task.resume()
         
     }
-
-
+    
+    func setupLocation() {
+        locationManager = CLLocationManager()
+        locationManager?.delegate = self
+        locationManager?.requestWhenInUseAuthorization()
+        
+        if let coords = locationManager?.location?.coordinate {
+            loadWeather(at: coords)
+        }
+    }
+    
+    @IBAction func refreshTapped(_ sender: Any) {
+        if let coords = locationManager?.location?.coordinate {
+            loadWeather(at: coords)
+        }
+    }
 }
 
