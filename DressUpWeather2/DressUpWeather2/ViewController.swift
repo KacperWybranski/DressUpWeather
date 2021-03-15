@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreLocation
+import CoreML
 
 class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var descriptLbl: UILabel!
@@ -125,16 +126,32 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     func recommendOutfit() {
         guard let temp = temperature, let wthr = weatherDescription else { return }
         
-        let model = OutfitRecommender()
+        let model: OutfitRecommender
+        
+        do {
+            let config = MLModelConfiguration()
+            model = try OutfitRecommender.init(configuration: config)
+        } catch {
+            print(error)
+            return
+        }
         
         let title: String
         let message: String
         
+        let input = OutfitRecommenderInput(temperature: Double(temp), weather: wthr)
+        
         do {
-            let prediction = try model.prediction(temperature: Double(temp), weather: wthr)
+            let prediction = try model.prediction(input: input)
             
             title = "Recommended outfit:"
-            message = prediction.rslt
+            let results = prediction.rsltProbability
+            
+            let sortedDict = results.sorted {
+                return $0.value > $1.value
+            }
+            
+            message = sortedDict[0].key + " or " + sortedDict[1].key
         } catch {
             title = "Error"
             message = "There was an error with finding proper outfit."
@@ -144,8 +161,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
     }
+    
+    //temporary
     @IBAction func recommendOutfit(_ sender: Any) {
         recommendOutfit()
     }
+    
+    @IBAction func refreshTapped(_ sender: Any) {
+        loadWeather()
+    }
+    
 }
 
