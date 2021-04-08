@@ -8,59 +8,60 @@
 import UIKit
 
 class BackgroundImage: UIImageView {
-    
     func setupBackground(weatherDsc: String?) {
+        //loading view looks better when using superview instead of self.bounds
         guard let view = superview else { return }
         
         let date = Date()
         let calendar = Calendar.current
         let hour = calendar.component(.hour, from: date)
         if hour >= 19 || hour <= 6 {
-            drawNightTheme(view: view)
+            drawNightTheme()
             return
         } else {
-            drawDayTheme(view: view, dsc: weatherDsc)
+            drawDayTheme(superview: view,dsc: weatherDsc)
             return
         }
     }
     
-    func drawNightTheme(view: UIView) {
-        let renderer = UIGraphicsImageRenderer(bounds: view.bounds)
+    func drawNightTheme() {
+        let renderer = UIGraphicsImageRenderer(bounds: self.bounds)
         
         let img = renderer.image { ctx in
-            let rect = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height)
             
-            ctx.cgContext.setFillColor(UIColor(red: 0.5, green: 0, blue: 0.8, alpha: 1.0).cgColor)
-            
-            ctx.cgContext.addRect(rect)
-            ctx.cgContext.drawPath(using: .fill)
-            
+            //draw blue-black gradient
             let colorsSpace = CGColorSpaceCreateDeviceRGB()
             let colors = [UIColor(red: 0, green: 0, blue: 0, alpha: 1.0).cgColor, UIColor(red: 0, green: 0.1, blue: 0.4, alpha: 1.0).cgColor]
 
             if let gradient = CGGradient(colorsSpace: colorsSpace, colors: colors as CFArray, locations: [0.0, 1.0]) {
                 
-                ctx.cgContext.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: view.bounds.height), options: [])
+                ctx.cgContext.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 0, y: self.bounds.height), options: [])
             }
             
+            //draw stars
+            let imgWidth = self.bounds.width
+            let imgHeight = self.bounds.height
+            
+            for _ in 1...100 {
+                let rect = CGRect(x: CGFloat.random(in: 0...imgWidth), y: CGFloat.random(in: 0...imgHeight), width: 3, height: 3)
+                ctx.cgContext.setFillColor(UIColor(white: 1.0, alpha: CGFloat.random(in: 0...1.0)).cgColor)
+                
+                ctx.cgContext.addEllipse(in: rect)
+                ctx.cgContext.drawPath(using: .fill)
+            }
         }
+        
+        image = img
+        
         UIView.animate(withDuration: 1.0) { [weak self] in
-            self?.image = img
             self?.isHidden = false
         }
     }
     
-    func drawDayTheme(view: UIView, dsc: String?) {
+    func drawDayTheme(superview view: UIView, dsc: String?) {
         let renderer = UIGraphicsImageRenderer(bounds: view.bounds)
         
         let img = renderer.image { ctx in
-            let rect = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height)
-            
-            ctx.cgContext.setFillColor(UIColor(red: 0.5, green: 0, blue: 0.8, alpha: 1.0).cgColor)
-            
-            ctx.cgContext.addRect(rect)
-            ctx.cgContext.drawPath(using: .fill)
-            
             let colorsSpace = CGColorSpaceCreateDeviceRGB()
             var colors = [CGColor]()
             
@@ -85,8 +86,10 @@ class BackgroundImage: UIImageView {
             }
             
         }
+        
+        image = img
+        
         UIView.animate(withDuration: 1.0) { [weak self] in
-            self?.image = img
             self?.isHidden = false
         }
     }

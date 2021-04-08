@@ -14,10 +14,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var degreeLbl: UILabel!
     @IBOutlet weak var locationLbl: UILabel!
     @IBOutlet weak var backgroundImage: BackgroundImage!
+    @IBOutlet weak var outfitImage: OutfitImage!
     
     var temperature: Int? = nil {
         didSet {
-            if let temp = temperature {
+                if let temp = temperature {
                 degreeLbl.text = "\(temp)°C"
             } else {
                 degreeLbl.text = "xx°C"
@@ -48,13 +49,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         weatherDescription = nil
         temperature = nil
-        loadWeather()
             
         locationLbl.adjustsFontSizeToFitWidth = true
         
-        locationManager = CLLocationManager()
-        locationManager?.delegate = self
-        locationManager?.requestWhenInUseAuthorization()
+        setupLocation()
     }
     
     func loadWeather() {
@@ -71,6 +69,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                         self?.temperature = temp - 273
                         self?.weatherDescription = description
                         self?.weatherDtlDscrpt = dtlDescription
+                        self?.recommendOutfit()
                     }
                 } catch {
                     print("We had an error retriving the weather")
@@ -144,32 +143,26 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         do {
             let prediction = try model.prediction(input: input)
             
-            title = "Recommended outfit:"
             let results = prediction.rsltProbability
             
             let sortedDict = results.sorted {
                 return $0.value > $1.value
             }
             
-            message = sortedDict[0].key + " or " + sortedDict[1].key
+            outfitImage.drawOutfit(sortedDict[0].key)
         } catch {
             title = "Error"
             message = "There was an error with finding proper outfit."
+            
+            let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
         }
-        
-        let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        ac.addAction(UIAlertAction(title: "OK", style: .default))
-        present(ac, animated: true)
-    }
-    
-    //temporary
-    @IBAction func recommendOutfit(_ sender: Any) {
-        recommendOutfit()
     }
     
     @IBAction func refreshTapped(_ sender: Any) {
+        setupLocation()
         loadWeather()
     }
-    
 }
 
