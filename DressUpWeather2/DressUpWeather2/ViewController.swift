@@ -15,30 +15,16 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var locationLbl: UILabel!
     @IBOutlet weak var backgroundImage: BackgroundImage!
     @IBOutlet weak var outfitImage: OutfitImage!
+    @IBOutlet weak var outfitImageSec: OutfitImage!
     
-    var temperature: Int? = nil {
-        didSet {
-                if let temp = temperature {
-                degreeLbl.text = "\(temp)°C"
-            } else {
-                degreeLbl.text = "xx°C"
-            }
-        }
-    }
+    var temperature: Int? = nil
     var weatherDescription: String? = nil {
         didSet {
             backgroundImage.setupBackground(weatherDsc: weatherDescription)
         }
     }
-    var weatherDtlDscrpt: String? = nil {
-        didSet {
-            if let dsc = weatherDtlDscrpt {
-                descriptLbl.text = dsc.capitalized
-            } else {
-                descriptLbl.text = "unknown"
-            }
-        }
-    }
+    var weatherDtlDscrpt: String? = nil
+    
     var locationManager: CLLocationManager?
     var currentLocation = CLLocation(latitude: 35, longitude: 139)
     
@@ -53,6 +39,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         locationLbl.adjustsFontSizeToFitWidth = true
         
         setupLocation()
+        
+        outfitImage.alpha = 0.0
+        outfitImageSec.alpha = 0.0
     }
     
     func loadWeather() {
@@ -66,10 +55,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                     let description = (weatherDetails.first?["main"] as? String) ?? "unknown"
                     let dtlDescription = (weatherDetails.first?["description"] as? String) ?? "unknown"
                     DispatchQueue.main.async { [weak self] in
-                        self?.temperature = temp - 273
-                        self?.weatherDescription = description
-                        self?.weatherDtlDscrpt = dtlDescription
-                        self?.recommendOutfit()
+                        self?.weatherDataLoaded(temp: temp - 273, description: description, detail: dtlDescription)
                     }
                 } catch {
                     print("We had an error retriving the weather")
@@ -150,6 +136,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             }
             
             outfitImage.drawOutfit(sortedDict[0].key)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.5) { [weak self] in
+                self?.outfitImageSec.drawOutfit(sortedDict[1].key)
+            }
+            
         } catch {
             title = "Error"
             message = "There was an error with finding proper outfit."
@@ -161,8 +152,40 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     @IBAction func refreshTapped(_ sender: Any) {
+        outfitImage.fadeOut()
+        outfitImageSec.fadeOut()
         setupLocation()
         loadWeather()
+    }
+    
+    func weatherDataLoaded(temp: Int?, description: String?, detail: String?) {
+        temperature = temp
+        weatherDescription = description
+        weatherDtlDscrpt = detail
+        
+        UIView.animate(withDuration: 0.2) { [weak self] in
+            self?.degreeLbl.alpha = 0.0
+            self?.descriptLbl.alpha = 0.0
+        } completion: { [weak self] _ in
+            if let temp = temp {
+                self?.degreeLbl.text = "\(temp)°C"
+            } else {
+                self?.degreeLbl.text = "xx°C"
+            }
+            
+            if let dsc = description {
+                self?.descriptLbl.text = dsc.capitalized
+            } else {
+                self?.descriptLbl.text = "unknown"
+            }
+            
+            UIView.animate(withDuration: 1.0) { [weak self] in
+                self?.degreeLbl.alpha = 1.0
+                self?.descriptLbl.alpha = 1.0
+            }
+        }
+        
+        recommendOutfit()
     }
 }
 
