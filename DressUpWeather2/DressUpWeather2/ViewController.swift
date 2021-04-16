@@ -16,6 +16,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var backgroundImage: BackgroundImage!
     @IBOutlet weak var outfitImage: OutfitImage!
     @IBOutlet weak var outfitImageSec: OutfitImage!
+    @IBOutlet weak var recommendOutfitLabel: UILabel!
     
     var temperature: Int? = nil
     var weatherDescription: String? = nil {
@@ -42,6 +43,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         outfitImage.alpha = 0.0
         outfitImageSec.alpha = 0.0
+        degreeLbl.alpha = 0.0
+        descriptLbl.alpha = 0.0
+        recommendOutfitLabel.alpha = 0.0
     }
     
     func loadWeather() {
@@ -85,8 +89,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func loadLocationName() {
-        print(currentLocation)
+        //temporary name until proper name is loaded
+        locationLbl.text = "[\(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude)]"
         
+        //loading proper name
         geocoder.reverseGeocodeLocation(currentLocation) { (placemarks, error) in
             self.processResponse(withPlacemarks: placemarks, error: error)
         }
@@ -154,8 +160,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBAction func refreshTapped(_ sender: Any) {
         outfitImage.fadeOut()
         outfitImageSec.fadeOut()
+        labelsFadeOut()
         setupLocation()
-        loadWeather()
     }
     
     func weatherDataLoaded(temp: Int?, description: String?, detail: String?) {
@@ -163,29 +169,33 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         weatherDescription = description
         weatherDtlDscrpt = detail
         
-        UIView.animate(withDuration: 0.2) { [weak self] in
-            self?.degreeLbl.alpha = 0.0
-            self?.descriptLbl.alpha = 0.0
-        } completion: { [weak self] _ in
-            if let temp = temp {
-                self?.degreeLbl.text = "\(temp)°C"
-            } else {
-                self?.degreeLbl.text = "xx°C"
-            }
-            
-            if let dsc = description {
-                self?.descriptLbl.text = dsc.capitalized
-            } else {
-                self?.descriptLbl.text = "unknown"
-            }
-            
-            UIView.animate(withDuration: 1.0) { [weak self] in
-                self?.degreeLbl.alpha = 1.0
-                self?.descriptLbl.alpha = 1.0
-            }
+        if let temp = temp {
+            degreeLbl.text = "\(temp)°C"
+        } else {
+            degreeLbl.text = "xx°C"
+        }
+        
+        if let dsc = description {
+            descriptLbl.text = dsc.capitalized
+        } else {
+            descriptLbl.text = "unknown"
+        }
+        
+        UIView.animate(withDuration: 1.0) { [weak self] in
+            self?.degreeLbl.alpha = 1.0
+            self?.descriptLbl.alpha = 1.0
+            self?.recommendOutfitLabel.alpha = 1.0
         }
         
         recommendOutfit()
+    }
+    
+    func labelsFadeOut() {
+        UIView.animate(withDuration: 0.2) { [weak self] in
+            self?.degreeLbl.alpha = 0.0
+            self?.descriptLbl.alpha = 0.0
+            self?.recommendOutfitLabel.alpha = 0.0
+        }
     }
 }
 

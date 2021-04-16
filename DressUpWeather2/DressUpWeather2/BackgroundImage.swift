@@ -69,7 +69,7 @@ class BackgroundImage: UIImageView {
             case "Clear":
                 colors = [UIColor(red: 0, green: 0.65, blue: 1, alpha: 1.0).cgColor, UIColor(red: 0.5, green: 0.9, blue: 1, alpha: 1.0).cgColor]
             case "Clouds":
-                colors = [UIColor(red: 0, green: 0.65, blue: 1, alpha: 1.0).cgColor, UIColor(red: 0.5, green: 0.9, blue: 1, alpha: 1.0).cgColor]
+                colors = [UIColor(red: 0.4, green: 0.4, blue: 0.5, alpha: 1.0).cgColor, UIColor(red: 0.3, green: 0.7, blue: 0.8, alpha: 1.0).cgColor]
             case "Snow":
                 colors = [UIColor(red: 0.76, green: 0.79, blue: 0.839, alpha: 1.0).cgColor, UIColor(red: 0.5, green: 0.9, blue: 1, alpha: 1.0).cgColor]
             case "Rain":

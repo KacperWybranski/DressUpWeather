@@ -52,6 +52,10 @@ class OutfitImage: UIImageView {
                 break
             }
             
+            if clothingOptions["hat"]! == "yes" {
+                drawWinterCap(ctx: ctx)
+            }
+            
             
         }
         
@@ -318,7 +322,6 @@ class OutfitImage: UIImageView {
         ctx.cgContext.move(to: CGPoint(x: startPoint.x+3, y: startPoint.y+7))
         ctx.cgContext.addLine(to: CGPoint(x: startPoint.x, y: startPoint.y+20))
         
-        
         //details
         ctx.cgContext.move(to: CGPoint(x: startPoint.x-15, y: startPoint.y+40))
         ctx.cgContext.addLine(to: CGPoint(x: startPoint.x-15, y: startPoint.y+60))
@@ -328,6 +331,23 @@ class OutfitImage: UIImageView {
         ctx.cgContext.drawPath(using: .stroke)
     }
     
+    func drawWinterCap(ctx: UIGraphicsRendererContext) {
+        ctx.cgContext.setStrokeColor(UIColor(white: 1.0, alpha: 1.0).cgColor)
+        ctx.cgContext.setLineWidth(3)
+        
+        let startPoint = CGPoint(x: 180, y: 175)
+        
+        ctx.cgContext.move(to: CGPoint(x: startPoint.x-25, y: startPoint.y+25))
+        ctx.cgContext.addLine(to: CGPoint(x: startPoint.x+25, y: startPoint.y+25))
+        ctx.cgContext.addCurve(to: CGPoint(x: startPoint.x+25, y: startPoint.y+5), control1: CGPoint(x: startPoint.x+30, y: startPoint.y+25), control2: CGPoint(x: startPoint.x+30, y: startPoint.y+5))
+        ctx.cgContext.addLine(to: CGPoint(x: startPoint.x-25, y: startPoint.y+5))
+        ctx.cgContext.addCurve(to: CGPoint(x: startPoint.x-25, y: startPoint.y+25), control1: CGPoint(x: startPoint.x-30, y: startPoint.y+5), control2: CGPoint(x: startPoint.x-30, y: startPoint.y+25))
+        ctx.cgContext.move(to: CGPoint(x: startPoint.x-25, y: startPoint.y+5))
+        ctx.cgContext.addQuadCurve(to: CGPoint(x: startPoint.x, y: startPoint.y-25), control: CGPoint(x: startPoint.x-25, y: startPoint.y-25))
+        ctx.cgContext.addQuadCurve(to: CGPoint(x: startPoint.x+25, y: startPoint.y+5), control: CGPoint(x: startPoint.x+25, y: startPoint.y-25))
+        
+        ctx.cgContext.drawPath(using: .stroke)
+    }
     
 
 }
